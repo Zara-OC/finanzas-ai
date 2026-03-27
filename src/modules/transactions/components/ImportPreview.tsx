@@ -1,8 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { ParsedCsvRow } from "@/modules/transactions/lib/import-utils";
+import type { ParsedImportRow } from "@/modules/transactions/lib/import-ingestion";
 
 interface ImportPreviewProps {
-  rows: ParsedCsvRow[];
+  rows: ParsedImportRow[];
 }
 
 export function ImportPreview({ rows }: ImportPreviewProps) {
@@ -35,7 +35,9 @@ export function ImportPreview({ rows }: ImportPreviewProps) {
               <TableRow key={index}>
                 {headers.map((header) => (
                   <TableCell key={header} className="max-w-48 truncate">
-                    {row[header] || "—"}
+                    {row[header] === null || row[header] === undefined || row[header] === ""
+                      ? "—"
+                      : String(row[header])}
                   </TableCell>
                 ))}
               </TableRow>

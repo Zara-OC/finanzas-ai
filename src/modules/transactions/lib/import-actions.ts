@@ -2,16 +2,11 @@
 
 import { categorizeTransactions } from "@/lib/ai/categorization";
 import { createClient } from "@/lib/supabase/server";
-import {
-  buildImportedTransactions,
-  type ColumnMappingValue,
-  type ParsedCsvRow,
-} from "./import-utils";
+import type { ImportedTransactionInput } from "./import-ingestion";
 
 interface ImportTransactionsInput {
   filename: string;
-  rows: ParsedCsvRow[];
-  mapping: ColumnMappingValue;
+  transactions: ImportedTransactionInput[];
 }
 
 interface ImportTransactionsResult {
@@ -46,7 +41,9 @@ export async function importTransactionsAction(
     };
   }
 
-  const preparedTransactions = buildImportedTransactions(input.rows, input.mapping);
+  const preparedTransactions = input.transactions.filter(
+    (transaction) => transaction.date && transaction.description.trim()
+  );
 
   if (!preparedTransactions.length) {
     return {
@@ -141,7 +138,10 @@ export async function importTransactionsAction(
 
   const [{ data: categories }, { data: aliases }] = await Promise.all([
     supabase.from("categories").select("id, name, parent_id"),
-    supabase.from("merchant_aliases").select("raw_pattern, merchant_name, category_id").eq("user_id", user.id),
+    supabase
+      .from("merchant_aliases")
+      .select("raw_pattern, merchant_name, category_id")
+      .eq("user_id", user.id),
   ]);
 
   const categorizations = await categorizeTransactions(

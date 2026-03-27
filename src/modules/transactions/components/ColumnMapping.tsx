@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ColumnMappingValue } from "@/modules/transactions/lib/import-utils";
+import type { ColumnMappingValue } from "@/modules/transactions/lib/import-ingestion";
 
 interface ColumnMappingProps {
   headers: string[];
