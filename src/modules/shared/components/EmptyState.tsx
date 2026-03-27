@@ -8,6 +8,7 @@ interface EmptyStateProps {
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
+  action?: React.ReactNode;
 }
 
 export function EmptyState({
@@ -17,6 +18,7 @@ export function EmptyState({
   actionLabel,
   actionHref,
   onAction,
+  action,
 }: EmptyStateProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
@@ -27,14 +29,18 @@ export function EmptyState({
         <h2 className="text-lg font-semibold">{title}</h2>
         <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
       </div>
-      {actionLabel &&
-        (actionHref ? (
-          <Button asChild>
-            <a href={actionHref}>{actionLabel}</a>
-          </Button>
-        ) : (
-          <Button onClick={onAction}>{actionLabel}</Button>
-        ))}
+      {action ??
+        (actionLabel
+          ? actionHref
+            ? (
+                <Button asChild>
+                  <a href={actionHref}>{actionLabel}</a>
+                </Button>
+              )
+            : (
+                <Button onClick={onAction}>{actionLabel}</Button>
+              )
+          : null)}
     </div>
   );
 }
