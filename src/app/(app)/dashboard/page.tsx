@@ -20,6 +20,16 @@ function formatCompactDate(date: string) {
   }).format(new Date(`${date}T00:00:00`));
 }
 
+function pickCategory(
+  category: { name: string | null; color: string | null } | { name: string | null; color: string | null }[] | null
+) {
+  if (Array.isArray(category)) {
+    return category[0] ?? null;
+  }
+
+  return category;
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -58,6 +68,7 @@ export default async function DashboardPage() {
   const typedTransactions = (transactions ?? []).map((transaction) => ({
     ...transaction,
     amount: Number(transaction.amount),
+    category: pickCategory(transaction.category),
   }));
 
   const now = new Date();
