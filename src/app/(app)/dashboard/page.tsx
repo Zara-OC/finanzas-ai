@@ -1,10 +1,18 @@
+import { LayoutDashboard } from "lucide-react";
+import { Header } from "@/modules/shared/components/Header";
+import { EmptyState } from "@/modules/shared/components/EmptyState";
+
 export default function DashboardPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Coming soon</p>
-      </div>
-    </div>
+    <>
+      <Header title="Dashboard" />
+      <EmptyState
+        icon={LayoutDashboard}
+        title="Tu dashboard esta vacio"
+        description="Importa tus transacciones para ver metricas, graficos y un resumen de tus finanzas."
+        actionLabel="Importar transacciones"
+        actionHref="/transactions"
+      />
+    </>
   );
 }
