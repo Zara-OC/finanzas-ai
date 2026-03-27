@@ -8,8 +8,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Finanzas AI",
-  description: "Tu asistente de finanzas personales con IA",
+  title: {
+    default: "Finanzas AI — Tus finanzas, claras como nunca",
+    template: "%s | Finanzas AI",
+  },
+  description:
+    "Importá tus gastos, la IA los categoriza automáticamente. Preguntale a tu plata a dónde se va. Hecho para Argentina.",
+  openGraph: {
+    title: "Finanzas AI — Tus finanzas, claras como nunca",
+    description:
+      "Importá tus gastos, la IA los categoriza automáticamente. Preguntale a tu plata a dónde se va.",
+    type: "website",
+    locale: "es_AR",
+  },
 };
 
 export default function RootLayout({
