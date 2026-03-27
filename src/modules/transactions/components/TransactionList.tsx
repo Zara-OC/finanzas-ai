@@ -84,7 +84,9 @@ export function TransactionList({ transactions, categories }: TransactionListPro
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline">
-                    AI confidence: {transaction.ai_confidence ? `${Math.round(transaction.ai_confidence * 100)}%` : "pendiente"}
+                    {transaction.ai_confidence
+                      ? `Confianza AI ${Math.round(transaction.ai_confidence * 100)}%`
+                      : "Sin clasificar"}
                   </Badge>
                   {transaction.user_verified && <Badge variant="secondary">Corregida por vos</Badge>}
                 </div>

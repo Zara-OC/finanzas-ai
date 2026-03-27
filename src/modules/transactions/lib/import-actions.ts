@@ -1,5 +1,6 @@
 "use server";
 
+import { categorizeTransactions } from "@/lib/ai/categorization";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildImportedTransactions,
@@ -17,6 +18,7 @@ interface ImportTransactionsResult {
   ok: boolean;
   imported: number;
   duplicates: number;
+  categorized: number;
   batchId?: string;
   error?: string;
 }
@@ -39,6 +41,7 @@ export async function importTransactionsAction(
       ok: false,
       imported: 0,
       duplicates: 0,
+      categorized: 0,
       error: "Necesitás iniciar sesión para importar transacciones.",
     };
   }
@@ -50,6 +53,7 @@ export async function importTransactionsAction(
       ok: false,
       imported: 0,
       duplicates: 0,
+      categorized: 0,
       error: "No encontré filas válidas para importar.",
     };
   }
@@ -71,6 +75,7 @@ export async function importTransactionsAction(
       ok: false,
       imported: 0,
       duplicates: 0,
+      categorized: 0,
       error: "No pude crear el lote de importación.",
     };
   }
@@ -88,6 +93,7 @@ export async function importTransactionsAction(
       ok: false,
       imported: 0,
       duplicates: 0,
+      categorized: 0,
       error: "No pude validar duplicados antes de importar.",
     };
   }
@@ -128,20 +134,38 @@ export async function importTransactionsAction(
       ok: true,
       imported: 0,
       duplicates: preparedTransactions.length,
+      categorized: 0,
       batchId: batch.id,
     };
   }
 
-  const { error: insertError } = await supabase.from("transactions").insert(
+  const [{ data: categories }, { data: aliases }] = await Promise.all([
+    supabase.from("categories").select("id, name, parent_id"),
+    supabase.from("merchant_aliases").select("raw_pattern, merchant_name, category_id").eq("user_id", user.id),
+  ]);
+
+  const categorizations = await categorizeTransactions(
     uniqueTransactions.map((transaction) => ({
+      description: transaction.description,
+      amount: transaction.amount,
+    })),
+    categories ?? [],
+    aliases ?? []
+  );
+
+  const categorizedCount = categorizations.filter((item) => item.categoryId).length;
+
+  const { error: insertError } = await supabase.from("transactions").insert(
+    uniqueTransactions.map((transaction, index) => ({
       user_id: user.id,
       amount: transaction.amount,
       description: transaction.description,
-      merchant_name: null,
+      merchant_name: categorizations[index]?.merchantName ?? null,
+      category_id: categorizations[index]?.categoryId ?? null,
       date: transaction.date,
       import_batch_id: batch.id,
       metadata: transaction.metadata,
-      ai_confidence: null,
+      ai_confidence: categorizations[index]?.confidence ?? null,
       user_verified: false,
       is_recurring: false,
     }))
@@ -158,6 +182,7 @@ export async function importTransactionsAction(
       ok: false,
       imported: 0,
       duplicates: 0,
+      categorized: 0,
       error: "Falló la inserción de transacciones en la base.",
     };
   }
@@ -166,7 +191,7 @@ export async function importTransactionsAction(
     .from("import_batches")
     .update({
       status: "completed",
-      categorized_count: 0,
+      categorized_count: categorizedCount,
     })
     .eq("id", batch.id)
     .eq("user_id", user.id);
@@ -175,6 +200,7 @@ export async function importTransactionsAction(
     ok: true,
     imported: uniqueTransactions.length,
     duplicates: preparedTransactions.length - uniqueTransactions.length,
+    categorized: categorizedCount,
     batchId: batch.id,
   };
 }

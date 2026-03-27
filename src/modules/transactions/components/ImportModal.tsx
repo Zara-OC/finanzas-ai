@@ -52,7 +52,7 @@ export function ImportModal({ triggerLabel = "Importar CSV", onImported }: Impor
     debit: "",
     credit: "",
   });
-  const [result, setResult] = useState<{ imported: number; duplicates: number } | null>(null);
+  const [result, setResult] = useState<{ imported: number; duplicates: number; categorized: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,7 +113,11 @@ export function ImportModal({ triggerLabel = "Importar CSV", onImported }: Impor
         return;
       }
 
-      setResult({ imported: response.imported, duplicates: response.duplicates });
+      setResult({
+        imported: response.imported,
+        duplicates: response.duplicates,
+        categorized: response.categorized,
+      });
       setStep("done");
       onImported?.();
     });
@@ -230,7 +234,7 @@ export function ImportModal({ triggerLabel = "Importar CSV", onImported }: Impor
             <div>
               <p className="font-semibold">Importación completada</p>
               <p className="text-sm text-muted-foreground">
-                Importadas {result.imported} transacciones · Duplicados salteados: {result.duplicates}
+                Importadas {result.imported} transacciones · Duplicados salteados: {result.duplicates} · Categorizadas automáticamente: {result.categorized}
               </p>
             </div>
           </div>
